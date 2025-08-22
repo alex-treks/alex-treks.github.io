@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Python ABCs, Pattern Matching, and Runtime Types — Alex</title>
+    <meta
+      name="description"
+      content="My notes on Python's Abstract Base Classes and how they interact with structural typing and pattern matching, plus when to avoid clever runtime ABC tricks."
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <!-- Font Awesome (icons) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <a class="sr-only" href="#content">Skip to content</a>
+
+    <!-- ======= Header / Navigation ======= -->
+    <header class="site-header">
+      <div class="container inner">
+        <div class="brand">
+          <a href="index.html" aria-label="Go to home">
+            <span class="logo" aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="primary-nav"
+          data-menu-toggle
+        >
+          <span>Menu</span>
+        </button>
+
+        <nav id="primary-nav" class="primary" aria-label="Primary">
+          <ul class="nav-list">
+            <li><a href="blog-posts.html" aria-current="page">Blog</a></li>
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="index.html#cv">CV / Resumé</a></li>
+            <li><a href="index.html#contact">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="content">
+      <section class="hero compact">
+        <div class="container">
+          <span class="eyebrow">Blog</span>
+          <h1 class="title">
+            Python ABCs, Pattern Matching, and Runtime Types
+          </h1>
+          <p class="lead">
+            A quick tour of what Abstract Base Classes can do in modern Python,
+            why it is tempting to get clever with them, and why I usually do
+            not.
+          </p>
+
+          <article style="margin-top: 20px">
+            <p class="mono">
+              <strong>TLDR:</strong> ABCs are great for semantics and
+              documentation, but bending them to power
+              <code>match</code> patterns and “negative types” gets cute fast
+              and brittle faster. Prefer simple protocols or concrete
+              predicates.
+            </p>
+
+            <h2>ABCs and structural checks</h2>
+            <p class="mono">
+              Python’s <code>abc.ABC</code> lets you define interfaces and, with
+              <code>__subclasshook__</code>, treat classes as subtypes based on
+              behavior instead of inheritance. That is powerful, especially for
+              libraries that want to accept “anything iterable” or “anything
+              that looks like a path”.
+            </p>
+
+            <pre class="code-font"><code>from abc import ABC
+
+class AbstractIterable(ABC):
+    @classmethod
+    def __subclasshook__(cls, C):
+        return hasattr(C, "__iter__")
+</code></pre>
+
+            <h2>Pattern matching meets ABC</h2>
+            <p class="mono">
+              Since Python 3.10, <code>match</code> patterns can dispatch on
+              types. That invites tricks like writing tiny ABCs purely to steer
+              pattern matching. It works, but now your “types” exist only to
+              satisfy a control-flow convenience. Maintenance pays the bill
+              later.
+            </p>
+
+            <pre class="code-font"><code>def visit(x):
+    match x:
+        case DistanceMetric():
+            ...  # do A
+        case Point():
+            ...  # do B
+        case _:
+            ...
+</code></pre>
+
+            <h2>Combinators and negatypes</h2>
+            <p class="mono">
+              You can even generate ABCs at runtime to emulate boolean type
+              combinators like <em>Not</em>, <em>And</em>, and <em>Or</em>. It
+              is clever, and occasionally useful for experiments, but the
+              indirection makes code harder to read, test, and refactor.
+            </p>
+
+            <pre class="code-font"><code>def Not(cls):
+    class _Not(ABC):
+        @classmethod
+        def __subclasshook__(_, C):
+            return not issubclass(C, cls)
+    return _Not
+</code></pre>
+
+            <h2>Why I avoid the cleverness</h2>
+            <ul class="mono" style="padding-left: 1.25rem">
+              <li>
+                <strong>Readability:</strong> New contributors will not expect
+                runtime-generated ABCs in a <code>match</code>.
+              </li>
+              <li>
+                <strong>Tooling:</strong> Type checkers and IDEs cannot reason
+                about your bespoke ABC combinators.
+              </li>
+              <li>
+                <strong>Testing:</strong> Hidden subclass rules make fixtures
+                and fakes surprising.
+              </li>
+              <li>
+                <strong>Drift:</strong> Over time the “type = behavior” contract
+                gets fuzzy, which breaks invariants.
+              </li>
+            </ul>
+
+            <h2>What I do instead</h2>
+            <ul class="mono" style="padding-left: 1.25rem">
+              <li>
+                Use <strong>Protocols</strong> (typing) or simple
+                <strong>duck-typing</strong> checks for behavior.
+              </li>
+              <li>
+                Prefer explicit <strong>predicate guards</strong> in
+                <code>match</code> over fancy type routes.
+              </li>
+              <li>
+                Keep ABCs for stable, widely reused interfaces shared across
+                modules.
+              </li>
+            </ul>
+
+            <p class="mono">
+              <em>Further reading:</em> for a deep dive into runtime ABC tricks
+              and combinators, see the original writeup that inspired these
+              notes.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container footgrid">
+        <div>
+          <strong>Software Engineer</strong>
+          <p>Based out of Long Beach, NY 🏄🏼‍♂️</p>
+        </div>
+                <div>
+          <small>Attribution</small>
+          <p>Built with HTML and CSS ❤️</p>
+        </div>
+        <div>
+          <small>Contact</small>
+          <p>
+            <a href="mailto:email@example.com">email@example.com</a><br />
+            <a href="tel:+15555555555">(555) 555-5555</a>
+          </p>
+        </div>
+
+      <!-- Social icons (match site footer) -->
+      <div style="margin-top: 20px; text-align: center; font-size: 1.5rem">
+        <a href="#" aria-label="Twitter" style="margin: 0 8px"
+          ><i class="fa-brands fa-x-twitter"></i
+        ></a>
+        <a href="#" aria-label="GitHub" style="margin: 0 8px"
+          ><i class="fa-brands fa-github"></i
+        ></a>
+        <a href="#" aria-label="LinkedIn" style="margin: 0 8px"
+          ><i class="fa-brands fa-linkedin"></i
+        ></a>
+        <a href="#" aria-label="Instagram" style="margin: 0 8px"
+          ><i class="fa-brands fa-instagram"></i
+        ></a>
+        <a href="#" aria-label="Facebook" style="margin: 0 8px"
+          ><i class="fa-brands fa-facebook"></i
+        ></a>
+      </div>
+
+      <p class="copyright">© 2025 Alex. All rights reserved.</p>
+    </footer>
+
+    <script>
+      // Simple, accessible menu toggle for mobile
+      const btn = document.querySelector("[data-menu-toggle]");
+      const nav = document.getElementById("primary-nav");
+      if (btn && nav) {
+        btn.addEventListener("click", () => {
+          const open = nav.classList.toggle("open");
+          btn.setAttribute("aria-expanded", String(open));
+        });
+      }
+    </script>
+  </body>
+</html>
