@@ -316,6 +316,10 @@ p {
   color: #0b1324;
 }
 .lead {
+  width: 100%;
+  max-width: 740px;
+  padding-left: 20px;
+  padding-right: 20px;
   font-size: 1.15rem;
   opacity: 0.95;
 }
