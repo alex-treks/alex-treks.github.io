@@ -1,5 +1,8 @@
 /* ========= Code Blocks — Dracula theme ========= */
 :root {
+  --code-fg: #b8bfc6; /* text */
+  --code-bg: #333333; /* block background */
+  --code-accent: #4a89dc;
   --dracula-bg: #282a36;
   --dracula-foreground: #f8f8f2;
   --dracula-current-line: #44475a;
@@ -14,46 +17,51 @@
 }
 
 .tiro {
-  width: 100%;
-  max-width: relative;
+  width: 70%;
+  max-width: 740px; /* pick a real max width */
+  margin: 0 auto; /* centers horizontally */
   padding-left: 20px;
   padding-right: 20px;
 }
 
 /* Block code */
-pre {
-  background: var(--dracula-bg);
-  color: var(--dracula-foreground);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 14px 16px;
+pre.code-font,
+pre[class*="language-"] {
+  background: var(--code-bg);
+  color: var(--code-fg);
+  padding: 16px 20px;
+  border-radius: 8px;
   overflow: auto;
-  box-shadow: var(--shadow);
-}
-pre code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  display: block;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Inline code */
+/* ensure nested <code> inherits correctly */
+pre.code-font code,
+pre[class*="language-"] code {
+  background: transparent;
+  color: inherit;
+  font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+  font-size: 0.9375rem; /* ~15px */
+}
+
+/* inline code */
 :not(pre) > code {
-  background: #2b2d3a;
-  color: var(--dracula-foreground);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  padding: 0.12em 0.35em;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: rgba(0, 0, 0, 0.05);
+  color: inherit;
+  padding: 0 0.35em;
+  border-radius: 4px;
+  font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+  font-size: 0.95em;
 }
 
-/* Text selection inside code */
+/* selection inside code blocks */
 pre ::selection,
-code::selection {
-  background: var(--dracula-current-line);
-  color: var(--dracula-foreground);
+pre ::-moz-selection {
+  background: var(--code-accent);
+  color: #fff;
+  text-shadow: none;
 }
-
 /* Prism.js-style tokens */
 .token.comment,
 .token.prolog,
