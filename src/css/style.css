@@ -13,6 +13,13 @@
   --dracula-yellow: #f1fa8c;
 }
 
+.tiro {
+  width: 100%;
+  max-width: relative;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
 /* Block code */
 pre {
   background: var(--dracula-bg);
